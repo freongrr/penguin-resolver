@@ -1,5 +1,6 @@
 package example
 
+import example.HexaDirections._
 import org.scalatest.FunSuite
 
 class HexagonGameTest extends FunSuite {
@@ -29,6 +30,22 @@ class HexagonGameTest extends FunSuite {
 
     assert((game += Shape(0, 0, Seq(HexaDirections.Down))).isSuccess)
     assert((game += Shape(0, 2, Seq(HexaDirections.Up))).isFailure)
+
+    printGame(game)
+  }
+
+  test("circle grid with default shift") {
+    val grid = HexagonGrid(4, 3)
+    val game = new HexagonGame(grid)
+    assert((game += Shape(0, 0, Seq(DownRight, UpRight, DownRight, Down, Down, UpLeft, DownLeft, UpLeft, Up))).isSuccess)
+
+    printGame(game)
+  }
+
+  test("circle grid with up shift") {
+    val grid = HexagonGrid(4, 3, shiftOddDown = false)
+    val game = new HexagonGame(grid)
+    assert((game += Shape(0, 0, Seq(UpRight, DownRight, UpRight, Down, Down, DownLeft, UpLeft, DownLeft, Up))).isSuccess)
 
     printGame(game)
   }

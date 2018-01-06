@@ -1,7 +1,7 @@
 package example
 
 /**
-  * TODO : documentation
+  * TODO : Use different styles for the background and shapes
   */
 class HexagonGamePrinter {
 
@@ -24,23 +24,20 @@ class HexagonGamePrinter {
   private def renderGrid(builder: StringBuilder, grid: HexagonGrid, dimensions: CharDimensions): Unit = {
     for (y <- 0 until grid.height) {
       for (x <- 0 until grid.width) {
-        renderHexagon(builder, grid, dimensions, x, y, full = false)
+        renderHexagon(builder, grid, dimensions, x, y, ' ')
       }
     }
   }
 
   // TODO : reduce number of parameters!
-  private def renderHexagon(builder: StringBuilder, grid: HexagonGrid, dimensions: CharDimensions, x: Int, y: Int, full: Boolean): Unit = {
+  private def renderHexagon(builder: StringBuilder, grid: HexagonGrid, dimensions: CharDimensions, x: Int, y: Int, content: Char): Unit = {
     val line1 = hexagonOffset(x, y, dimensions, grid.shiftOddDown)
     val line2 = line1 + dimensions.widthWithLineBreak
     val line3 = line2 + dimensions.widthWithLineBreak
     builder.setCharAt(line1 + 2, '_')
     builder.setCharAt(line1 + 3, '_')
     builder.setCharAt(line2 + 1, '/')
-    if (full) {
-      builder.setCharAt(line2 + 2, '_')
-      builder.setCharAt(line2 + 3, '_')
-    }
+    builder.setCharAt(line2 + 2, content)
     builder.setCharAt(line2 + 4, '\\')
     builder.setCharAt(line3 + 1, '\\')
     builder.setCharAt(line3 + 2, '_')
@@ -50,9 +47,11 @@ class HexagonGamePrinter {
 
   private def renderShapes(builder: StringBuilder, game: HexagonGame, dimensions: CharDimensions): Unit = {
     // TODO : erase borders when moving between hexagons!
+    var c = 0
     for (s <- game.shapes) {
-      s.visit((x, y) => {
-        renderHexagon(builder, game.grid, dimensions, x, y, full = true)
+      game.visitShape(s, (x, y) => {
+        renderHexagon(builder, game.grid, dimensions, x, y, c.toString.charAt(0))
+        c += 1
       })
     }
   }
