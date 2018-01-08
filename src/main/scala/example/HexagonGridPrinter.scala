@@ -23,12 +23,9 @@ class HexagonGridPrinter {
   private def renderCell(builder: StringBuilder, grid: HexagonGrid, dimensions: CharDimensions)(cell: Cell): Unit = {
     val context = new RenderContext(builder, grid, dimensions, cell)
     cell.content match {
-      case Nil => renderEmptyCell(context)
-      case Pawn => renderPawn(context)
-      case Shape(directions) => {
-        // TODO : how do I get the direction for this cell?
-        renderShape(context)
-      }
+      case Empty => renderEmptyCell(context)
+      case Pawn() => renderPawn(context)
+      case ShapeSegment(openSides) => renderShape(context, openSides)
       case _ => // TODO
     }
   }
@@ -45,7 +42,8 @@ class HexagonGridPrinter {
     renderContext.setLine3(1, "\\__/")
   }
 
-  private def renderShape(renderContext: RenderContext): Unit = {
+  private def renderShape(renderContext: RenderContext, openSides: Seq[HexaDirection]): Unit = {
+    // TODO : use openSides
     renderContext.setLine1(2, "__")
     renderContext.setLine2(1, "/S \\")
     renderContext.setLine3(1, "\\__/")
