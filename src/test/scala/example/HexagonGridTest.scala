@@ -1,5 +1,6 @@
 package example
 
+import example.HexaDirections._
 import org.scalatest.FunSuite
 
 class HexagonGridTest extends FunSuite {
@@ -15,17 +16,47 @@ class HexagonGridTest extends FunSuite {
     assert(grid(2, 1) == Cell(2, 1))
   }
 
-  test("add a Pawn in the grid") {
+  test("add a Pawn inside the grid") {
     val grid = new HexagonGrid(4, 3)
 
-    val pawn = new DummyPawn
-    assert((grid += (0, 0, pawn)).isSuccess)
+    assert((grid += (0, 0, Pawn())).isSuccess)
+  }
+
+  test("can't add a Pawn outside of the grid") {
+    val grid = new HexagonGrid(4, 3)
+
+    assert((grid += (-1, -1, Pawn())).isFailure)
+    assert((grid += (10, 10, Pawn())).isFailure)
   }
 
   test("can't add a Pawn in an occupied cell") {
     val grid = new HexagonGrid(4, 3)
 
-    assert((grid += (0, 0, new DummyPawn)).isSuccess)
-    assert((grid += (0, 0, new DummyPawn)).isFailure)
+    assert((grid += (0, 0, Pawn())).isSuccess)
+    assert((grid += (0, 0, Pawn())).isFailure)
+  }
+
+  test("add a shape inside an empty grid") {
+    val grid = new HexagonGrid(4, 3)
+
+    val shape = Shape(Seq(Down))
+    assert((grid += (0, 0, shape)).isSuccess)
+  }
+
+  test("can't add a shape that continues outside of the grid") {
+    val grid = new HexagonGrid(4, 3)
+
+    val shape = Shape(Seq(Down, Down, Down, Down))
+    assert((grid += (0, 0, shape)).isFailure)
+  }
+
+  test("encircle grid with default shift") {
+    val grid = new HexagonGrid(4, 3)
+    assert((grid += (0, 0, Shape(Seq(DownRight, UpRight, DownRight, Down, Down, UpLeft, DownLeft, UpLeft, Up)))).isSuccess)
+  }
+
+  test("encircle grid with up shift") {
+    val grid = new HexagonGrid(4, 3, shiftOddDown = false)
+    assert((grid += (0, 0, Shape(Seq(UpRight, DownRight, UpRight, Down, Down, DownLeft, UpLeft, DownLeft, Up)))).isSuccess)
   }
 }

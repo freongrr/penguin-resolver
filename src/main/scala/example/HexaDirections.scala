@@ -1,5 +1,8 @@
 package example
 
+/**
+  * Represents a direction in an hexagonal grid
+  */
 sealed trait HexaDirection
 
 object HexaDirections {
