@@ -22,8 +22,8 @@ class HexagonGridPrinterTest extends FunSuite {
 
     assert(renderGrid(grid) == "" +
       "  __    __  \n" +
-      " /? \\__/? \\ \n" +
-      " \\__/? \\__/ \n" +
+      " /S \\__/S \\ \n" +
+      " \\__/S \\__/ \n" +
       " /  \\__/  \\ \n" +
       " \\__/  \\__/ \n" +
       "    \\__/    \n")
@@ -31,6 +31,6 @@ class HexagonGridPrinterTest extends FunSuite {
 
   private def renderGrid(grid: HexagonGrid) = {
     val printer = new HexagonGridPrinter
-    printer.render(grid).toString()
+    printer.render(grid).result
   }
 }

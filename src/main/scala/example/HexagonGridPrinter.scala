@@ -21,26 +21,34 @@ class HexagonGridPrinter {
   }
 
   private def renderCell(builder: StringBuilder, grid: HexagonGrid, dimensions: CharDimensions)(cell: Cell): Unit = {
-    val line1 = hexagonOffset(cell.x, cell.y, dimensions, grid.shiftOddDown)
-    val line2 = line1 + dimensions.widthWithLineBreak
-    val line3 = line2 + dimensions.widthWithLineBreak
-    builder.setCharAt(line1 + 2, '_')
-    builder.setCharAt(line1 + 3, '_')
-    builder.setCharAt(line2 + 1, '/')
-    // TODO : render cell differently depending on type of content
-    val content = cell.content match {
-      case Nil => ' '
-      case Pawn => 'P'
-      case Shape => 'S'
-      case _ => '?'
+    val context = new RenderContext(builder, grid, dimensions, cell)
+    cell.content match {
+      case Nil => renderEmptyCell(context)
+      case Pawn => renderPawn(context)
+      case Shape(directions) => {
+        // TODO : how do I get the direction for this cell?
+        renderShape(context)
+      }
+      case _ => // TODO
     }
-    println(s"Rendering $content for $cell at ${line2 + 2}")
-    builder.setCharAt(line2 + 2, content)
-    builder.setCharAt(line2 + 4, '\\')
-    builder.setCharAt(line3 + 1, '\\')
-    builder.setCharAt(line3 + 2, '_')
-    builder.setCharAt(line3 + 3, '_')
-    builder.setCharAt(line3 + 4, '/')
+  }
+
+  private def renderEmptyCell(renderContext: RenderContext): Unit = {
+    renderContext.setLine1(2, "__")
+    renderContext.setLine2(1, "/  \\")
+    renderContext.setLine3(1, "\\__/")
+  }
+
+  private def renderPawn(renderContext: RenderContext): Unit = {
+    renderContext.setLine1(2, "__")
+    renderContext.setLine2(1, "/P \\")
+    renderContext.setLine3(1, "\\__/")
+  }
+
+  private def renderShape(renderContext: RenderContext): Unit = {
+    renderContext.setLine1(2, "__")
+    renderContext.setLine2(1, "/S \\")
+    renderContext.setLine3(1, "\\__/")
   }
 
   /**
@@ -95,6 +103,36 @@ class HexagonGridPrinter {
     }
     buffer
   }
+}
+
+private case class CharDimensions(width: Int, height: Int) {
+  // add one for the line line
+  def widthWithLineBreak: Int = width + 1
+}
+
+private class RenderContext(val builder: StringBuilder, val grid: HexagonGrid, val dimensions: CharDimensions, val cell: Cell) {
+
+  def setLine1(offset: Int, str: String): Unit = {
+    setLineX(0, offset, str)
+  }
+
+  def setLine2(offset: Int, str: String): Unit = {
+    setLineX(1, offset, str)
+  }
+
+  def setLine3(offset: Int, str: String): Unit = {
+    setLineX(2, offset, str)
+  }
+
+  private def setLineX(line: Int, offset: Int, str: String): Unit = {
+    val lineStart = hexagonOffset(cell.x, cell.y, dimensions, grid.shiftOddDown) + (line * dimensions.widthWithLineBreak)
+    for (i <- 0 until str.length) {
+      // TODO : skip ' ' (or merge it?)
+      val idx = lineStart + offset + i
+      val c = str.charAt(i)
+      builder.setCharAt(idx, c)
+    }
+  }
 
   /**
     * Returns the position of an hexagon in the char buffer.
@@ -111,9 +149,4 @@ class HexagonGridPrinter {
     val line = 2 * y + (if (x % 2 == 0) evenColumnOffset else oddColumnOffset)
     (line * dimensions.widthWithLineBreak) + (x * 3)
   }
-}
-
-private case class CharDimensions(width: Int, height: Int) {
-  // add one for the line line
-  def widthWithLineBreak: Int = width + 1
 }
