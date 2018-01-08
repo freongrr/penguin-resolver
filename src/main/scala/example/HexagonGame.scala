@@ -107,7 +107,7 @@ object HexagonGameMain {
   def main(args: Array[String]): Unit = {
     val printer = new HexagonGamePrinter
 
-    val grid = HexagonGrid(4, 3)
+    val grid = new HexagonGrid(4, 3)
     val game = new HexagonGame(grid)
     game += Shape(0, 0, Seq(DownRight, UpRight, DownRight, Down, Down, UpLeft, DownLeft, UpLeft, Up))
 
