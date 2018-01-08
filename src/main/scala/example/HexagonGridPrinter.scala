@@ -1,5 +1,7 @@
 package example
 
+import example.HexaDirections._
+
 /**
   * TODO : Use different styles for the background and shapes
   */
@@ -43,10 +45,13 @@ class HexagonGridPrinter {
   }
 
   private def renderShape(renderContext: RenderContext, openSides: Seq[HexaDirection]): Unit = {
-    // TODO : use openSides
-    renderContext.setLine1(2, "__")
-    renderContext.setLine2(1, "/S \\")
-    renderContext.setLine3(1, "\\__/")
+    renderContext.setLine2(2, "S")
+    if (!openSides.contains(UpLeft)) renderContext.setLine2(1, "/")
+    if (!openSides.contains(Up)) renderContext.setLine1(2, "__")
+    if (!openSides.contains(UpRight)) renderContext.setLine2(4, "\\")
+    if (!openSides.contains(DownLeft)) renderContext.setLine3(1, "\\")
+    if (!openSides.contains(Down)) renderContext.setLine3(2, "__")
+    if (!openSides.contains(DownRight)) renderContext.setLine3(4, "/")
   }
 
   /**

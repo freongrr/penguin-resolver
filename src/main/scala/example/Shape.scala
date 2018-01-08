@@ -8,7 +8,6 @@ case class Shape(directions: Seq[HexaDirection] = Seq.empty) {
 
   def length: Int = directions.length
 
-
   // TODO : try with a method like that:
   // def segments: Seq[ShapeSegment] = {
   //   0 to length map (i => at(i))

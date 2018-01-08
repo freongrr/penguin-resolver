@@ -23,7 +23,7 @@ class HexagonGridPrinterTest extends FunSuite {
     assert(renderGrid(grid) == "" +
       "  __    __  \n" +
       " /S \\__/S \\ \n" +
-      " \\__/S \\__/ \n" +
+      " \\__ S  __/ \n" +
       " /  \\__/  \\ \n" +
       " \\__/  \\__/ \n" +
       "    \\__/    \n")
