@@ -31,6 +31,6 @@ class HexagonGridPrinterTest extends FunSuite {
 
   private def renderGrid(grid: HexagonGrid) = {
     val printer = new HexagonGridPrinter
-    printer.render(grid).result
+    printer.render(grid)
   }
 }

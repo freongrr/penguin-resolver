@@ -17,6 +17,16 @@ case class Shape(directions: Seq[HexaDirection] = Seq.empty) {
     if (index < 0 || index > length)
       throw new IllegalArgumentException(s"x is outside bounds [0:$length]")
 
+    // TODO : collect all potential sides (and sort them)
+    //
+    // e.g. this shape would give:
+    //  __    __
+    // /0 \__/4 \ 0: Down, DownRight
+    // \__/3 \__/ 1: UpRight, Up, DownRight 
+    // /1 \__/    2: Up, UpLeft 
+    // \__/2 \    3: UpRight, UpLeft, DownRight, Down
+    //    \__/    4: DownLeft
+
     if (index == 0) {
       if (length != 0) {
         ShapeSegment(Seq(directions.head))

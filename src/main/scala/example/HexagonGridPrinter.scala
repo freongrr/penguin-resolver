@@ -2,6 +2,21 @@ package example
 
 import example.HexaDirections._
 
+import scala.collection.mutable.ArrayBuffer
+
+object AnsiColors {
+
+  val ANSI_RESET = "\u001B[0m"
+  val ANSI_BLACK = "\u001B[30m"
+  val ANSI_RED = "\u001B[31m"
+  val ANSI_GREEN = "\u001B[32m"
+  val ANSI_YELLOW = "\u001B[33m"
+  val ANSI_BLUE = "\u001B[34m"
+  val ANSI_PURPLE = "\u001B[35m"
+  val ANSI_CYAN = "\u001B[36m"
+  val ANSI_WHITE = "\u001B[37m" // TODO 1;37 does not work :(
+}
+
 /**
   * TODO : Use different styles for the background and shapes
   */
@@ -11,61 +26,90 @@ class HexagonGridPrinter {
     * Renders a HexagonGame to a StringBuilder.
     *
     * @param grid the grid to render
-    * @return a StringBuilder filled with a string representation of the game
+    * @return a string representation of the game
     */
-  def render(grid: HexagonGrid): StringBuilder = {
-    val dimensions = charBufferDimensions(grid)
-    val builder = createBuilder(dimensions)
+  def render(grid: HexagonGrid): String = {
+    val buffer = new RenderBuffer(grid)
 
-    grid.cells foreach renderCell(builder, grid, dimensions)
+    // TODO : sort the cells instead of doing that?
+    renderEmptyCells(grid, buffer)
+    renderShapes(grid, buffer)
+    renderPawns(grid, buffer)
 
-    builder
+    buffer.string
   }
 
-  private def renderCell(builder: StringBuilder, grid: HexagonGrid, dimensions: CharDimensions)(cell: Cell): Unit = {
-    val context = new RenderContext(builder, grid, dimensions, cell)
-    cell.content match {
-      case Empty => renderEmptyCell(context)
-      case Pawn() => renderPawn(context)
-      case ShapeSegment(openSides) => renderShape(context, openSides)
-      case _ => // TODO
-    }
+  private def renderEmptyCells(grid: HexagonGrid, buffer: RenderBuffer): Unit = {
+    // TODO : better way to iterate (filter?)
+    grid.cells.foreach(cell => {
+      cell.content match {
+        case Empty => {
+          renderEmptyCell(buffer.forCell(cell))
+        }
+        case _ => ()
+      }
+    })
   }
 
-  private def renderEmptyCell(renderContext: RenderContext): Unit = {
-    renderContext.setLine1(2, "__")
-    renderContext.setLine2(1, "/  \\")
-    renderContext.setLine3(1, "\\__/")
+  private def renderEmptyCell(renderBuffer: CellRenderBuffer): Unit = {
+    renderBuffer.setLine1(2, "__", AnsiColors.ANSI_BLUE)
+    renderBuffer.setLine2(1, "/~~\\", AnsiColors.ANSI_BLUE)
+    renderBuffer.setLine3(1, "\\__/", AnsiColors.ANSI_BLUE)
   }
 
-  private def renderPawn(renderContext: RenderContext): Unit = {
-    renderContext.setLine1(2, "__")
-    renderContext.setLine2(1, "/P \\")
-    renderContext.setLine3(1, "\\__/")
+  private def renderShapes(grid: HexagonGrid, buffer: RenderBuffer): Unit = {
+    // TODO : better way to iterate (filter?)
+    grid.cells.foreach(cell => {
+      cell.content match {
+        case ShapeSegment(openSides) => renderShape(buffer.forCell(cell), openSides)
+        case _ => ()
+      }
+    })
   }
 
-  private def renderShape(renderContext: RenderContext, openSides: Seq[HexaDirection]): Unit = {
-    renderContext.setLine2(2, "S")
-    if (!openSides.contains(UpLeft)) renderContext.setLine2(1, "/")
-    if (!openSides.contains(Up)) renderContext.setLine1(2, "__")
-    if (!openSides.contains(UpRight)) renderContext.setLine2(4, "\\")
-    if (!openSides.contains(DownLeft)) renderContext.setLine3(1, "\\")
-    if (!openSides.contains(Down)) renderContext.setLine3(2, "__")
-    if (!openSides.contains(DownRight)) renderContext.setLine3(4, "/")
+  private def renderShape(renderBuffer: CellRenderBuffer, openSides: Seq[HexaDirection]): Unit = {
+    renderBuffer.setLine2(2, "  ", AnsiColors.ANSI_WHITE)
+    if (!openSides.contains(UpLeft)) renderBuffer.setLine2(1, "/", AnsiColors.ANSI_WHITE)
+    if (!openSides.contains(Up)) renderBuffer.setLine1(2, "__", AnsiColors.ANSI_WHITE)
+    if (!openSides.contains(UpRight)) renderBuffer.setLine2(4, "\\", AnsiColors.ANSI_WHITE)
+    if (!openSides.contains(DownLeft)) renderBuffer.setLine3(1, "\\", AnsiColors.ANSI_WHITE)
+    if (!openSides.contains(Down)) renderBuffer.setLine3(2, "__", AnsiColors.ANSI_WHITE)
+    if (!openSides.contains(DownRight)) renderBuffer.setLine3(4, "/", AnsiColors.ANSI_WHITE)
   }
 
-  /**
-    * Computes the number of characters required to display the hexagon grid.
-    *
-    * @param grid a grid 
-    * @return a CharDimensions object containing the width and height in characters
-    */
-  private def charBufferDimensions(grid: HexagonGrid): CharDimensions = {
-    if (grid.width == 0 || grid.height == 0) {
-      CharDimensions(0, 0)
-    } else {
-      CharDimensions(charWidth(grid.width), charHeight(grid.width, grid.height))
-    }
+  private def renderPawns(grid: HexagonGrid, buffer: RenderBuffer): Unit = {
+    // TODO : better way to iterate (filter?)
+    grid.cells.foreach(cell => {
+      cell.content match {
+        case Pawn() => renderPawn(buffer.forCell(cell))
+        case _ => ()
+      }
+    })
+  }
+
+  private def renderPawn(renderBuffer: CellRenderBuffer): Unit = {
+    renderBuffer.setLine1(2, "__", AnsiColors.ANSI_PURPLE)
+    renderBuffer.setLine2(1, "/", AnsiColors.ANSI_PURPLE)
+    renderBuffer.setLine2(2, "oo", AnsiColors.ANSI_YELLOW)
+    renderBuffer.setLine2(4, "\\", AnsiColors.ANSI_PURPLE)
+    renderBuffer.setLine3(1, "\\__/", AnsiColors.ANSI_PURPLE)
+  }
+}
+
+private case class CharDimensions(width: Int, height: Int) {
+  // add one for the line line
+  def widthWithLineBreak: Int = width + 1
+}
+
+// TODO : This is terribly inefficient!
+private class RenderBuffer(grid: HexagonGrid, buffer: ArrayBuffer[ArrayBuffer[String]]) {
+
+  def this(grid: HexagonGrid) = this(grid, new ArrayBuffer[ArrayBuffer[String]](grid.height))
+
+  {
+    val width = charWidth(grid.width)
+    val height = charHeight(grid.width, grid.height)
+    initBuffer(width, height)
   }
 
   private def charWidth(width: Int): Int = {
@@ -89,67 +133,56 @@ class HexagonGridPrinter {
     }
   }
 
-  /**
-    * Creates a StringBuilder of the required dimensions
-    *
-    * @param dimensions the width and height of the buffer in characters
-    * @return an empty char character buffer filled with spaces and line separator
-    */
-  private def createBuilder(dimensions: CharDimensions): StringBuilder = {
-    val buffer = new StringBuilder(dimensions.width * dimensions.widthWithLineBreak)
-    // TODO : improve initialization
-    for (_ <- 0 until dimensions.height) {
-      for (_ <- 0 until dimensions.width) {
-        buffer += ' '
+  private def initBuffer(width: Int, height: Int): Unit = {
+    for (_ <- 0 until height) {
+      val lineBuffer = new ArrayBuffer[String](width + 1)
+      buffer += lineBuffer
+      for (_ <- 0 until width) {
+        lineBuffer += " "
       }
-      buffer += '\n'
+      lineBuffer += s"\n"
     }
-    buffer
+  }
+
+  def forCell(cell: Cell): CellRenderBuffer = {
+    new CellRenderBuffer(this.buffer, grid, cell)
+  }
+
+  def string: String = {
+    val builder = new StringBuilder
+    buffer foreach (lb => lb foreach builder.++=)
+    builder.result
   }
 }
 
-private case class CharDimensions(width: Int, height: Int) {
-  // add one for the line line
-  def widthWithLineBreak: Int = width + 1
-}
+private class CellRenderBuffer(val buffer: ArrayBuffer[ArrayBuffer[String]], val grid: HexagonGrid, val cell: Cell) {
 
-private class RenderContext(val builder: StringBuilder, val grid: HexagonGrid, val dimensions: CharDimensions, val cell: Cell) {
-
-  def setLine1(offset: Int, str: String): Unit = {
-    setLineX(0, offset, str)
+  def setLine1(offset: Int, str: String, color: String): Unit = {
+    setLineX(0, offset, str, color)
   }
 
-  def setLine2(offset: Int, str: String): Unit = {
-    setLineX(1, offset, str)
+  def setLine2(offset: Int, str: String, color: String): Unit = {
+    setLineX(1, offset, str, color)
   }
 
-  def setLine3(offset: Int, str: String): Unit = {
-    setLineX(2, offset, str)
+  def setLine3(offset: Int, str: String, color: String): Unit = {
+    setLineX(2, offset, str, color)
   }
 
-  private def setLineX(line: Int, offset: Int, str: String): Unit = {
-    val lineStart = hexagonOffset(cell.x, cell.y, dimensions, grid.shiftOddDown) + (line * dimensions.widthWithLineBreak)
+  private def setLineX(lineOffset: Int, colOffset: Int, str: String, color: String): Unit = {
+    val line = adjustLine(cell.x, cell.y) + lineOffset
+    val col = (cell.x * 3) + colOffset
     for (i <- 0 until str.length) {
       // TODO : skip ' ' (or merge it?)
-      val idx = lineStart + offset + i
       val c = str.charAt(i)
-      builder.setCharAt(idx, c)
+      val lineBuffer = buffer(line)
+      lineBuffer(col + i) = color + c + AnsiColors.ANSI_RESET
     }
   }
 
-  /**
-    * Returns the position of an hexagon in the char buffer.
-    *
-    * @param x            the column of the hexagon
-    * @param y            the row of the hexagon
-    * @param dimensions   the dimensions of the text buffer
-    * @param shiftOddDown true to shift hexagons in odd columns down (or up otherwise)
-    * @return the offset of the hexagon in the buffer
-    */
-  private def hexagonOffset(x: Int, y: Int, dimensions: CharDimensions, shiftOddDown: Boolean): Int = {
-    val evenColumnOffset = if (shiftOddDown) 0 else 1
-    val oddColumnOffset = if (shiftOddDown) 1 else 0
-    val line = 2 * y + (if (x % 2 == 0) evenColumnOffset else oddColumnOffset)
-    (line * dimensions.widthWithLineBreak) + (x * 3)
+  private def adjustLine(x: Int, y: Int) = {
+    val evenColumnOffset = if (grid.shiftOddDown) 0 else 1
+    val oddColumnOffset = if (grid.shiftOddDown) 1 else 0
+    2 * y + (if (x % 2 == 0) evenColumnOffset else oddColumnOffset)
   }
 }
