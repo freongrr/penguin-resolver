@@ -34,7 +34,7 @@ class HexagonGrid(val width: Int, val height: Int, val shiftOddDown: Boolean = t
     val shapeCells = getShapeCell(x, y, shape)
     val canAddShape = shapeCells.forall(c => isCellEmpty(c.x, c.y))
     if (canAddShape) {
-      shapeCells.foreach(tuple => doUpdate(tuple.x, tuple.y, tuple.content))
+      shapeCells.foreach(c => doUpdate(c.x, c.y, c.content))
       Success()
     } else {
       log(s"Can't add $shape at $x, $y")

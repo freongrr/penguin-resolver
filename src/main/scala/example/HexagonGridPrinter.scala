@@ -10,6 +10,7 @@ class HexagonGridPrinter {
     case Empty => 1
     case Pawn() => 2
     case ShapeSegment(_) => 3
+    case _ => 99
   })
 
   /**
@@ -21,18 +22,13 @@ class HexagonGridPrinter {
   def render(grid: HexagonGrid): String = {
     val buffer = new RenderBuffer(grid)
 
-    // Sort cells by depth
-    val sortedCells = grid.cells.sorted(CELL_COMPARATOR)
-
-    sortedCells foreach (cell => {
-      val cellRenderBuffer = buffer.forCell(cell)
-      cell.content match {
-        case Empty => renderEmptyCell(cellRenderBuffer)
-        case ShapeSegment(openSides) => renderShape(cellRenderBuffer, openSides)
-        case Pawn() => renderPawn(cellRenderBuffer)
-        case _ => ()
-      }
-    })
+    // Render cells sorted by depth
+    grid.cells sorted CELL_COMPARATOR foreach {
+      case c@Cell(_, _, Empty) => renderEmptyCell(buffer.forCell(c))
+      case c@Cell(_, _, ShapeSegment(openSides)) => renderShape(buffer.forCell(c), openSides)
+      case c@Cell(_, _, Pawn()) => renderPawn(buffer.forCell(c))
+      case _ => ()
+    }
 
     buffer.string
   }
