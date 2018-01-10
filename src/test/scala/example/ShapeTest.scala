@@ -60,4 +60,26 @@ class ShapeTest extends FunSuite {
     assert(shape.at(2) == ShapeSegment(Seq(DownLeft, DownRight)))
     assert(shape.at(3) == ShapeSegment(Seq(UpLeft)))
   }
+
+  test("empty shape rotate equals to itself") {
+    val shape = Shape()
+    assert(shape.rotate(1) == Shape())
+  }
+
+  test("simple positive rotation") {
+    val shape = Shape(Seq(Down))
+    assert(shape.rotate(1) == Shape(Seq(DownRight)))
+  }
+
+  test("simple negative rotation") {
+    val shape = Shape(Seq(Down))
+    assert(shape.rotate(-1) == Shape(Seq(DownLeft)))
+  }
+
+  test("complex shape rotation") {
+    // | | becomes / \
+    // \ /         | |
+    val shape = Shape(Seq(Down, DownRight, UpRight, Up))
+    assert(shape.rotate(3) == Shape(Seq(Up, UpLeft, DownLeft, Down)))
+  }
 }

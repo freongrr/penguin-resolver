@@ -42,5 +42,17 @@ case class Shape(directions: Seq[HexaDirection] = Seq.empty) {
     }
   }
 
-  // TODO : add a method that rotates the shape and returns a new shape
+  def rotate(i: Int): Shape = {
+    Shape(directions.map(d => this.rotate(d, i)))
+  }
+
+  private def rotate(direction: HexaDirection, i: Int): HexaDirection = {
+    if (i == 0) {
+      direction
+    } else if (i < 0) {
+      rotate(direction, 6 + i)
+    } else {
+      rotate(direction.rotateByOne(), i - 1)
+    }
+  }
 }

@@ -8,6 +8,7 @@ import example.HexaDirections._
 sealed trait HexaDirection {
 
   // HACK - this should probably not refer to its own sub-classes... 
+
   def opposite: HexaDirection = {
     this match {
       case UpRight => DownLeft
@@ -16,6 +17,17 @@ sealed trait HexaDirection {
       case DownLeft => UpRight
       case Down => Up
       case DownRight => UpLeft
+    }
+  }
+
+  def rotateByOne(): HexaDirection = {
+    this match {
+      case UpRight => Up
+      case Up => UpLeft
+      case UpLeft => DownLeft
+      case DownLeft => Down
+      case Down => DownRight
+      case DownRight => UpRight
     }
   }
 }
