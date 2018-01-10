@@ -4,23 +4,13 @@ import example.HexaDirections._
 
 import scala.collection.mutable.ArrayBuffer
 
-object AnsiColors {
-
-  val ANSI_RESET = "\u001B[0m"
-  val ANSI_BLACK = "\u001B[30m"
-  val ANSI_RED = "\u001B[31m"
-  val ANSI_GREEN = "\u001B[32m"
-  val ANSI_YELLOW = "\u001B[33m"
-  val ANSI_BLUE = "\u001B[34m"
-  val ANSI_PURPLE = "\u001B[35m"
-  val ANSI_CYAN = "\u001B[36m"
-  val ANSI_WHITE = "\u001B[37m" // TODO 1;37 does not work :(
-}
-
-/**
-  * TODO : Use different styles for the background and shapes
-  */
 class HexagonGridPrinter {
+
+  private def CELL_COMPARATOR = Ordering.by[Cell, Int](_.content match {
+    case Empty => 1
+    case Pawn() => 2
+    case ShapeSegment(_) => 3
+  })
 
   /**
     * Renders a HexagonGame to a StringBuilder.
@@ -31,74 +21,45 @@ class HexagonGridPrinter {
   def render(grid: HexagonGrid): String = {
     val buffer = new RenderBuffer(grid)
 
-    // TODO : sort the cells instead of doing that?
-    renderEmptyCells(grid, buffer)
-    renderShapes(grid, buffer)
-    renderPawns(grid, buffer)
+    // Sort cells by depth
+    val sortedCells = grid.cells.sorted(CELL_COMPARATOR)
+
+    sortedCells foreach (cell => {
+      val cellRenderBuffer = buffer.forCell(cell)
+      cell.content match {
+        case Empty => renderEmptyCell(cellRenderBuffer)
+        case ShapeSegment(openSides) => renderShape(cellRenderBuffer, openSides)
+        case Pawn() => renderPawn(cellRenderBuffer)
+        case _ => ()
+      }
+    })
 
     buffer.string
   }
 
-  private def renderEmptyCells(grid: HexagonGrid, buffer: RenderBuffer): Unit = {
-    // TODO : better way to iterate (filter?)
-    grid.cells.foreach(cell => {
-      cell.content match {
-        case Empty => {
-          renderEmptyCell(buffer.forCell(cell))
-        }
-        case _ => ()
-      }
-    })
-  }
-
   private def renderEmptyCell(renderBuffer: CellRenderBuffer): Unit = {
-    renderBuffer.setLine1(2, "__", AnsiColors.ANSI_BLUE)
-    renderBuffer.setLine2(1, "/~~\\", AnsiColors.ANSI_BLUE)
-    renderBuffer.setLine3(1, "\\__/", AnsiColors.ANSI_BLUE)
-  }
-
-  private def renderShapes(grid: HexagonGrid, buffer: RenderBuffer): Unit = {
-    // TODO : better way to iterate (filter?)
-    grid.cells.foreach(cell => {
-      cell.content match {
-        case ShapeSegment(openSides) => renderShape(buffer.forCell(cell), openSides)
-        case _ => ()
-      }
-    })
+    renderBuffer.setString(0, 2, "__", AnsiColors.ANSI_BLUE)
+    renderBuffer.setString(1, 1, "/~~\\", AnsiColors.ANSI_BLUE)
+    renderBuffer.setString(2, 1, "\\__/", AnsiColors.ANSI_BLUE)
   }
 
   private def renderShape(renderBuffer: CellRenderBuffer, openSides: Seq[HexaDirection]): Unit = {
-    renderBuffer.setLine2(2, "  ", AnsiColors.ANSI_WHITE)
-    if (!openSides.contains(UpLeft)) renderBuffer.setLine2(1, "/", AnsiColors.ANSI_WHITE)
-    if (!openSides.contains(Up)) renderBuffer.setLine1(2, "__", AnsiColors.ANSI_WHITE)
-    if (!openSides.contains(UpRight)) renderBuffer.setLine2(4, "\\", AnsiColors.ANSI_WHITE)
-    if (!openSides.contains(DownLeft)) renderBuffer.setLine3(1, "\\", AnsiColors.ANSI_WHITE)
-    if (!openSides.contains(Down)) renderBuffer.setLine3(2, "__", AnsiColors.ANSI_WHITE)
-    if (!openSides.contains(DownRight)) renderBuffer.setLine3(4, "/", AnsiColors.ANSI_WHITE)
-  }
-
-  private def renderPawns(grid: HexagonGrid, buffer: RenderBuffer): Unit = {
-    // TODO : better way to iterate (filter?)
-    grid.cells.foreach(cell => {
-      cell.content match {
-        case Pawn() => renderPawn(buffer.forCell(cell))
-        case _ => ()
-      }
-    })
+    renderBuffer.setString(1, 2, "  ", AnsiColors.ANSI_WHITE)
+    if (!openSides.contains(UpLeft)) renderBuffer.setString(1, 1, "/", AnsiColors.ANSI_WHITE)
+    if (!openSides.contains(Up)) renderBuffer.setString(0, 2, "__", AnsiColors.ANSI_WHITE)
+    if (!openSides.contains(UpRight)) renderBuffer.setString(1, 4, "\\", AnsiColors.ANSI_WHITE)
+    if (!openSides.contains(DownLeft)) renderBuffer.setString(2, 1, "\\", AnsiColors.ANSI_WHITE)
+    if (!openSides.contains(Down)) renderBuffer.setString(2, 2, "__", AnsiColors.ANSI_WHITE)
+    if (!openSides.contains(DownRight)) renderBuffer.setString(2, 4, "/", AnsiColors.ANSI_WHITE)
   }
 
   private def renderPawn(renderBuffer: CellRenderBuffer): Unit = {
-    renderBuffer.setLine1(2, "__", AnsiColors.ANSI_PURPLE)
-    renderBuffer.setLine2(1, "/", AnsiColors.ANSI_PURPLE)
-    renderBuffer.setLine2(2, "oo", AnsiColors.ANSI_YELLOW)
-    renderBuffer.setLine2(4, "\\", AnsiColors.ANSI_PURPLE)
-    renderBuffer.setLine3(1, "\\__/", AnsiColors.ANSI_PURPLE)
+    renderBuffer.setString(0, 2, "__", AnsiColors.ANSI_PURPLE)
+    renderBuffer.setString(1, 1, "/", AnsiColors.ANSI_PURPLE)
+    renderBuffer.setString(1, 2, "oo", AnsiColors.ANSI_YELLOW)
+    renderBuffer.setString(1, 4, "\\", AnsiColors.ANSI_PURPLE)
+    renderBuffer.setString(2, 1, "\\__/", AnsiColors.ANSI_PURPLE)
   }
-}
-
-private case class CharDimensions(width: Int, height: Int) {
-  // add one for the line line
-  def widthWithLineBreak: Int = width + 1
 }
 
 // TODO : This is terribly inefficient!
@@ -157,23 +118,10 @@ private class RenderBuffer(grid: HexagonGrid, buffer: ArrayBuffer[ArrayBuffer[St
 
 private class CellRenderBuffer(val buffer: ArrayBuffer[ArrayBuffer[String]], val grid: HexagonGrid, val cell: Cell) {
 
-  def setLine1(offset: Int, str: String, color: String): Unit = {
-    setLineX(0, offset, str, color)
-  }
-
-  def setLine2(offset: Int, str: String, color: String): Unit = {
-    setLineX(1, offset, str, color)
-  }
-
-  def setLine3(offset: Int, str: String, color: String): Unit = {
-    setLineX(2, offset, str, color)
-  }
-
-  private def setLineX(lineOffset: Int, colOffset: Int, str: String, color: String): Unit = {
+  def setString(lineOffset: Int, colOffset: Int, str: String, color: String): Unit = {
     val line = adjustLine(cell.x, cell.y) + lineOffset
     val col = (cell.x * 3) + colOffset
     for (i <- 0 until str.length) {
-      // TODO : skip ' ' (or merge it?)
       val c = str.charAt(i)
       val lineBuffer = buffer(line)
       lineBuffer(col + i) = color + c + AnsiColors.ANSI_RESET
