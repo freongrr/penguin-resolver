@@ -18,28 +18,70 @@ class HexagonGrid(val width: Int, val height: Int, val shiftOddDown: Boolean = t
 
   def cells: Seq[Cell] = _cells
 
-  // TODO : replace with immutable method - e.g. def ::(...): Try[HexagonGrid]
-  def +=(x: Int, y: Int, pawn: Pawn): Try[Unit] = {
+  /**
+    * Mutates the current grid by adding a Pawn.
+    *
+    * @param x    the column to add the pawn to (>= 0 and < width)
+    * @param y    the row to add the pawn to (>= 0 and < height)
+    * @param pawn the pawn to add
+    * @throws IllegalArgumentException if the Pawn can't be added
+    */
+  def +=(x: Int, y: Int, pawn: Pawn): Unit = {
     if (isCellEmpty(x, y)) {
       doUpdate(x, y, pawn)
-      Success()
     } else {
       log(s"Can't add $pawn at $x, $y")
-      Failure(new IllegalArgumentException("Can't add shape here"))
+      throw new IllegalArgumentException("Can't add shape here")
     }
   }
 
-  // TODO : replace with immutable method - e.g. def ::(...): Try[HexagonGrid]
-  def +=(x: Int, y: Int, shape: Shape): Try[Unit] = {
+  /**
+    * Returns a copy of this grid with an additional Pawn, if it can bw added. If not returns {Failure}.  
+    *
+    * @param x    the column to add the pawn to (>= 0 and < width)
+    * @param y    the row to add the pawn to (>= 0 and < height)
+    * @param pawn the pawn to add
+    * @return a Try wrapping the updated grid
+    */
+  def :+(x: Int, y: Int, pawn: Pawn): Try[HexagonGrid] = {
+    val gridCopy = this.copy()
+    Try.apply(() => {
+      gridCopy += (x, y, pawn)
+    }).transform(_ => Success(gridCopy), Failure(_))
+  }
+
+  /**
+    * Mutates the current grid by adding a Shape.
+    *
+    * @param x     the column to place the start of the shape to (>= 0 and < width)
+    * @param y     the row to place start of the shape (>= 0 and < height)
+    * @param shape the shape to add
+    * @throws IllegalArgumentException if the Shape can't be added
+    */
+  def +=(x: Int, y: Int, shape: Shape): Unit = {
     val shapeCells = getShapeCell(x, y, shape)
     val canAddShape = shapeCells.forall(c => isCellEmpty(c.x, c.y))
     if (canAddShape) {
       shapeCells.foreach(c => doUpdate(c.x, c.y, c.content))
-      Success()
     } else {
       log(s"Can't add $shape at $x, $y")
-      Failure(new IllegalArgumentException("Can't add shape here"))
+      throw new IllegalArgumentException("Can't add shape here")
     }
+  }
+
+  /**
+    * Returns a copy of this grid with an additional Pawn, if it can bw added. If not returns {Failure}.  
+    *
+    * @param x     the column to place the start of the shape to (>= 0 and < width)
+    * @param y     the row to place start of the shape (>= 0 and < height)
+    * @param shape the shape to add
+    * @return a Try wrapping the updated grid
+    */
+  def :+(x: Int, y: Int, shape: Shape): Try[HexagonGrid] = {
+    val gridCopy = this.copy()
+    Try.apply(() => {
+      gridCopy += (x, y, shape)
+    }).transform(_ => Success(gridCopy), Failure(_))
   }
 
   /**
@@ -77,6 +119,13 @@ class HexagonGrid(val width: Int, val height: Int, val shiftOddDown: Boolean = t
     } catch {
       case _: Exception => false
     }
+  }
+
+  private def copy(): HexagonGrid = {
+    val copy = new HexagonGrid(this.width, this.height, this.shiftOddDown)
+    copy._cells.clear()
+    copy._cells ++= this._cells
+    copy
   }
 
   private def doUpdate(x: Int, y: Int, content: CellContent): Unit = {
@@ -124,6 +173,6 @@ class HexagonGrid(val width: Int, val height: Int, val shiftOddDown: Boolean = t
 
   // TODO
   private def log(str: String): Unit = {
-    println("[LOG] " + str)
+    // println("[LOG] " + str)
   }
 }

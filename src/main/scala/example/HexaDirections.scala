@@ -7,8 +7,6 @@ import example.HexaDirections._
   */
 sealed trait HexaDirection {
 
-  // HACK - this should probably not refer to its own sub-classes... 
-
   def opposite: HexaDirection = {
     this match {
       case UpRight => DownLeft

@@ -1,10 +1,7 @@
 package example
 
 /**
-  * TODO : documentation
-  *
-  * @author fcortina
-  * @since 10/01/2018 - 22:12
+  * Common colors
   */
 object AnsiColors {
 
@@ -16,5 +13,7 @@ object AnsiColors {
   val ANSI_BLUE = "\u001B[34m"
   val ANSI_PURPLE = "\u001B[35m"
   val ANSI_CYAN = "\u001B[36m"
-  val ANSI_WHITE = "\u001B[37m" // TODO 1;37 does not work :(
+  val ANSI_WHITE = "\u001B[37m"
+
+  // TODO : "bold" colors (like 1;37) don't work :(
 }
