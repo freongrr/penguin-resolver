@@ -2,7 +2,12 @@ package example
 
 import example.HexaDirections._
 
-class HexagonGridPrinter(bufferBuilder: (Int, Int) => CharRenderBuffer = ColorRenderBuffer.apply) {
+/**
+  * Renders a HexagonGrid to a String.
+  *
+  * @param bufferBuilder a constructor for a StringGridBuffer
+  */
+class HexagonGridPrinter(bufferBuilder: (Int, Int) => StringGridBuffer = StringGridBuffer.color) {
 
   private def CELL_COMPARATOR = Ordering.by[Cell, Int] {
     case EmptyCell(_, _) => 1
@@ -24,7 +29,7 @@ class HexagonGridPrinter(bufferBuilder: (Int, Int) => CharRenderBuffer = ColorRe
     // Render cells sorted by depth
     grid.cells sorted CELL_COMPARATOR foreach (renderCell(gridRenderBuffer, _))
 
-    gridRenderBuffer.string
+    gridRenderBuffer.asString()
   }
 
   private def renderCell(gridRenderBuffer: GridRenderBuffer, cell: Cell): Unit = {
@@ -90,30 +95,30 @@ class HexagonGridPrinter(bufferBuilder: (Int, Int) => CharRenderBuffer = ColorRe
   }
 }
 
-private class GridRenderBuffer(val grid: HexagonGrid, val internalRenderBuffer: CharRenderBuffer) {
+private class GridRenderBuffer(grid: HexagonGrid, internalRenderBuffer: StringGridBuffer) {
 
-  def string: String = internalRenderBuffer.asString
+  def asString(): String = internalRenderBuffer.asString()
 
   def forCell(cell: Cell): CellRenderBuffer = {
-    new CellRenderBuffer(this, cell)
+    new CellRenderBuffer(grid, cell, internalRenderBuffer)
   }
 }
 
-private class CellRenderBuffer(val buffer: GridRenderBuffer, val cell: Cell) extends CharRenderBuffer {
+private class CellRenderBuffer(grid: HexagonGrid, cell: Cell, internalRenderBuffer: StringGridBuffer)
+  extends StringGridBuffer {
 
-  override def asString: String = {
+  override def asString(separator: String): String =
     throw new UnsupportedOperationException("Can't do that")
-  }
 
   override def write(line: Int, col: Int, str: String, option: Any): Unit = {
     val adjustedLine = adjustLine(cell.x, cell.y) + line
     val adjustedCol = (cell.x * 3) + col
-    buffer.internalRenderBuffer.write(adjustedLine, adjustedCol, str, option)
+    internalRenderBuffer.write(adjustedLine, adjustedCol, str, option)
   }
 
   private def adjustLine(x: Int, y: Int) = {
-    val evenColumnOffset = if (buffer.grid.shiftOddDown) 0 else 1
-    val oddColumnOffset = if (buffer.grid.shiftOddDown) 1 else 0
+    val evenColumnOffset = if (grid.shiftOddDown) 0 else 1
+    val oddColumnOffset = if (grid.shiftOddDown) 1 else 0
     2 * y + (if (x % 2 == 0) evenColumnOffset else oddColumnOffset)
   }
 }
