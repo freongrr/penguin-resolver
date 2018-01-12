@@ -19,13 +19,13 @@ class HexagonGrid(val width: Int, val height: Int, val shiftOddDown: Boolean, va
     * @return the updated grid
     */
   def :+(x: Int, y: Int, pawn: Pawn): HexagonGrid = {
-    this :+ (x, y, pawn: CellContent)
+    this.withContent(x, y, pawn: CellContent)
   }
 
-  private def :+(x: Int, y: Int, content: CellContent): HexagonGrid = {
+  private def withContent(x: Int, y: Int, content: CellContent): HexagonGrid = {
     this (x, y) match {
-      case Cell(_, _, Empty) =>
-        val newCells = cells.updated(y * width + x, Cell(x, y, content))
+      case EmptyCell(_, _) =>
+        val newCells = cells.updated(y * width + x, OccupiedCell(x, y, content))
         HexagonGrid(width, height, shiftOddDown, newCells)
       case _ =>
         throw new IllegalArgumentException(s"Can't add content at $x, $y")
@@ -41,41 +41,29 @@ class HexagonGrid(val width: Int, val height: Int, val shiftOddDown: Boolean, va
     * @return the updated grid
     */
   def :+(x: Int, y: Int, shape: Shape): HexagonGrid =
-    getShapeCell(x, y, shape).foldLeft(this)((g, c) => g :+ (c.x, c.y, c.content))
+    getShapeSegmentCells(x, y, shape).foldLeft(this)((g, c) => g.withContent(c.x, c.y, c.content))
 
+  // TODO : replace with addOptionally 
   def canAdd(x: Int, y: Int, shape: Shape): Boolean =
-    getShapeCell(x, y, shape).forall(c => isCellEmpty(c.x, c.y))
+    getShapeSegmentCells(x, y, shape).forall(c => isCellEmpty(c.x, c.y))
 
-  /**
-    * Returns cells that *would* represent a given shape. See Shape#at for more details.
-    * HACK - I'm only using Cell to avoid returning Seq[(Int, Int, ShapeSegment)]
-    *
-    * @param x     the start column of the shape
-    * @param y     the start row of the shape
-    * @param shape the shape
-    * @return a sequence of cells
-    */
-  private def getShapeCell(x: Int, y: Int, shape: Shape): Seq[Cell] = {
-    val firstCell = Cell(x, y, shape.at(0))
-    var pos = (x, y)
-    List(firstCell) ++ (0 until shape.length).map(i => {
-      val d = shape.directions(i)
-      pos = updatePosition(pos, d)
-      Cell(pos._1, pos._2, shape.at(i + 1))
+  private def getShapeSegmentCells(x: Int, y: Int, shape: Shape): Seq[OccupiedCell] = {
+    val firstCell = OccupiedCell(x, y, shape.at(0))
+    shape.directions.foldLeft(Seq(firstCell))((cells, direction) => {
+      val (newX, newY) = updatePosition(cells.last.x, cells.last.y, direction)
+      cells :+ OccupiedCell(newX, newY, shape.at(cells.length))
     })
   }
 
   private def isCellEmpty(x: Int, y: Int) =
     (x >= 0 && x < width) && (y >= 0 && y < height) && {
-      apply(x, y).content match {
-        case Empty => true
+      apply(x, y) match {
+        case EmptyCell(_, _) => true
         case _ => false
       }
     }
 
-  private def updatePosition(pos: (Int, Int), direction: HexaDirection): (Int, Int) = {
-    val (x, y) = pos
-
+  private def updatePosition(x: Int, y: Int, direction: HexaDirection): (Int, Int) = {
     // whether we change row when going left/right depends on the column and whether we shift up or down
     // e.g. when shifting odd columns down, we use UpRight and then DownRight while staying on row 1
     //     __    __    __  
@@ -120,7 +108,7 @@ class HexagonGrid(val width: Int, val height: Int, val shiftOddDown: Boolean, va
 object HexagonGrid {
 
   def apply(width: Int, height: Int, shiftOddDown: Boolean = true): HexagonGrid = {
-    val cells = for (y <- 0 until height; x <- 0 until width) yield Cell(x, y)
+    val cells = for (y <- 0 until height; x <- 0 until width) yield EmptyCell(x, y)
     HexagonGrid(width, height, shiftOddDown, cells)
   }
 

@@ -8,17 +8,17 @@ class HexagonGridTest extends FunSuite {
   test("all cells of grid are empty") {
     val grid = HexagonGrid(3, 2)
 
-    assert(grid(0, 0) == Cell(0, 0))
-    assert(grid(1, 0) == Cell(1, 0))
-    assert(grid(2, 0) == Cell(2, 0))
-    assert(grid(0, 1) == Cell(0, 1))
-    assert(grid(1, 1) == Cell(1, 1))
-    assert(grid(2, 1) == Cell(2, 1))
+    assert(grid(0, 0) == EmptyCell(0, 0))
+    assert(grid(1, 0) == EmptyCell(1, 0))
+    assert(grid(2, 0) == EmptyCell(2, 0))
+    assert(grid(0, 1) == EmptyCell(0, 1))
+    assert(grid(1, 1) == EmptyCell(1, 1))
+    assert(grid(2, 1) == EmptyCell(2, 1))
   }
 
   test("add a Pawn inside the grid") {
     val grid = HexagonGrid(4, 3) :+ (0, 0, Pawn())
-    assert(grid(0, 0).content == Pawn())
+    assert(grid(0, 0) == OccupiedCell(0, 0, Pawn()))
   }
 
   test("can't add a Pawn outside of the grid (1)") {

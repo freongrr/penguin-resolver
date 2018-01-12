@@ -3,12 +3,6 @@ package example
 sealed trait CellContent
 
 /**
-  * Represents an empty cell
-  */
-// TODO : shouldn't Empty extend Cell? 
-object Empty extends CellContent
-
-/**
   * Represents a pawn in a game
   */
 case class Pawn() extends CellContent
