@@ -1,5 +1,5 @@
 penguin-resolver
 ================
 
-An experiment in Scala to resolve a puzzle:
+An experiment in Scala to solve a puzzle:
 http://www.smartgames.eu/en/smartgames/penguins-pool-party
