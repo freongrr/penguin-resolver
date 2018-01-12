@@ -1,6 +1,6 @@
-package example
+package com.github.freongrr.penguinresolver.grid
 
-import example.HexaDirections._
+import com.github.freongrr.penguinresolver.grid.HexaDirections._
 import org.scalatest.FunSuite
 
 class HexagonGridTest extends FunSuite {

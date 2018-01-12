@@ -1,6 +1,7 @@
-package example
+package com.github.freongrr.penguinresolver.printer
 
-import example.HexaDirections._
+import com.github.freongrr.penguinresolver.grid.HexaDirections._
+import com.github.freongrr.penguinresolver.grid._
 
 /**
   * Renders a HexagonGrid to a String.
@@ -18,7 +19,7 @@ class HexagonGridPrinter(bufferBuilder: (Int, Int) => StringGridBuffer = StringG
   }
 
   /**
-    * Renders a HexagonGame to a StringBuilder.
+    * Renders a HexagonGame to a String.
     *
     * @param grid the grid to render
     * @return a string representation of the game

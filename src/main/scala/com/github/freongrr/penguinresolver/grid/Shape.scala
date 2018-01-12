@@ -1,6 +1,4 @@
-package example
-
-import example.HexaDirections.{Down, DownRight, Up, UpRight}
+package com.github.freongrr.penguinresolver.grid
 
 /**
   * Represents a shape in an hexagonal grid. The shape is expressed as a sequence of direction changes (a empty
@@ -10,7 +8,7 @@ case class Shape(directions: Seq[HexaDirection] = Seq.empty) {
 
   def length: Int = directions.length
 
-  def at(index: Int): ShapeSegment = {
+  def apply(index: Int): ShapeSegment = {
     if (index < 0 || index > length)
       throw new IllegalArgumentException(s"x is outside bounds [0:$length]")
 
@@ -54,11 +52,3 @@ case class Shape(directions: Seq[HexaDirection] = Seq.empty) {
     }
   }
 }
-
-object Shape1 extends Shape(Seq(UpRight, Down, Down))
-
-object Shape2 extends Shape(Seq(Up, UpRight, DownRight))
-
-object Shape3 extends Shape(Seq(DownRight, UpRight, DownRight))
-
-object Shape4 extends Shape(Seq(UpRight, UpRight, DownRight))

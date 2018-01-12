@@ -1,37 +1,37 @@
-package example
+package com.github.freongrr.penguinresolver.grid
 
-import example.HexaDirections._
+import com.github.freongrr.penguinresolver.grid.HexaDirections._
 import org.scalatest.FunSuite
 
 class ShapeTest extends FunSuite {
 
   test("first position of empty shape is closed shape segment") {
     val shape = Shape()
-    assert(shape.at(0) == ShapeSegment())
+    assert(shape(0) == ShapeSegment())
   }
 
   test("can't get shape outside of bounds (1)") {
     val shape = Shape(Seq(Down))
     assertThrows[IllegalArgumentException] {
-      shape.at(-1)
+      shape(-1)
     }
   }
 
   test("can't get shape outside of bounds (2)") {
     val shape = Shape(Seq(Down))
     assertThrows[IllegalArgumentException] {
-      shape.at(5)
+      shape(5)
     }
   }
 
   test("first position shape going down is open shape going down") {
     val shape = Shape(Seq(Down))
-    assert(shape.at(0) == ShapeSegment(Seq(Down)))
+    assert(shape(0) == ShapeSegment(Seq(Down)))
   }
 
   test("last position shape going down is open shape going up") {
     val shape = Shape(Seq(Down))
-    assert(shape.at(1) == ShapeSegment(Seq(Up)))
+    assert(shape(1) == ShapeSegment(Seq(Up)))
   }
 
   /* Shape with 2 direction changes:
@@ -55,10 +55,10 @@ class ShapeTest extends FunSuite {
    */
   test("get segments of a complex shape") {
     val shape = Shape(Seq(Up, UpRight, DownRight))
-    assert(shape.at(0) == ShapeSegment(Seq(Up)))
-    assert(shape.at(1) == ShapeSegment(Seq(Down, UpRight)))
-    assert(shape.at(2) == ShapeSegment(Seq(DownLeft, DownRight)))
-    assert(shape.at(3) == ShapeSegment(Seq(UpLeft)))
+    assert(shape(0) == ShapeSegment(Seq(Up)))
+    assert(shape(1) == ShapeSegment(Seq(Down, UpRight)))
+    assert(shape(2) == ShapeSegment(Seq(DownLeft, DownRight)))
+    assert(shape(3) == ShapeSegment(Seq(UpLeft)))
   }
 
   test("empty shape rotate equals to itself") {

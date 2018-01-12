@@ -1,6 +1,7 @@
-package example
+package com.github.freongrr.penguinresolver.printer
 
-import example.HexaDirections._
+import com.github.freongrr.penguinresolver.grid.HexaDirections._
+import com.github.freongrr.penguinresolver.grid.{HexagonGrid, Pawn, Shape}
 import org.scalatest.FunSuite
 
 class HexagonGridPrinterTest extends FunSuite {

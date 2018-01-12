@@ -1,6 +1,6 @@
-package example
+package com.github.freongrr.penguinresolver.grid
 
-import example.HexaDirections._
+import com.github.freongrr.penguinresolver.grid.HexaDirections._
 
 class HexagonGrid(val width: Int, val height: Int, val shiftOddDown: Boolean, val cells: Seq[Cell]) {
 
@@ -48,10 +48,10 @@ class HexagonGrid(val width: Int, val height: Int, val shiftOddDown: Boolean, va
     getShapeSegmentCells(x, y, shape).forall(c => isCellEmpty(c.x, c.y))
 
   private def getShapeSegmentCells(x: Int, y: Int, shape: Shape): Seq[OccupiedCell] = {
-    val firstCell = OccupiedCell(x, y, shape.at(0))
+    val firstCell = OccupiedCell(x, y, shape(0))
     shape.directions.foldLeft(Seq(firstCell))((cells, direction) => {
       val (newX, newY) = updatePosition(cells.last.x, cells.last.y, direction)
-      cells :+ OccupiedCell(newX, newY, shape.at(cells.length))
+      cells :+ OccupiedCell(newX, newY, shape(cells.length))
     })
   }
 

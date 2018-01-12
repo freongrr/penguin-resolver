@@ -1,4 +1,4 @@
-package example
+package com.github.freongrr.penguinresolver.grid
 
 sealed trait Cell {
 

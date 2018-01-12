@@ -1,4 +1,4 @@
-package example
+package com.github.freongrr.penguinresolver.printer
 
 import scala.collection.mutable.ArrayBuffer
 
