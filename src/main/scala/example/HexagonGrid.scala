@@ -2,87 +2,49 @@ package example
 
 import example.HexaDirections._
 
-import scala.util.{Failure, Success, Try}
+class HexagonGrid(val width: Int, val height: Int, val shiftOddDown: Boolean, val cells: Seq[Cell]) {
 
-class HexagonGrid(val width: Int, val height: Int, val shiftOddDown: Boolean = true) {
-
-  private val _cells = new scala.collection.mutable.ArrayBuffer[Cell](width * height)
-
-  {
-    for (y <- 0 until height) {
-      for (x <- 0 until width) {
-        _cells += Cell(x, y)
-      }
-    }
+  def apply(x: Int, y: Int): Cell = {
+    if (x < 0 || x >= width) throw new IllegalArgumentException(s"x: $x is outside bounds [0:$width]")
+    if (y < 0 || y >= height) throw new IllegalArgumentException(s"y: $y is outside bounds [0:$height]")
+    cells(y * width + x)
   }
 
-  def cells: Seq[Cell] = _cells
-
   /**
-    * Mutates the current grid by adding a Pawn.
+    * Returns a copy of this grid with an additional Pawn, if it can be added.  
     *
     * @param x    the column to add the pawn to (>= 0 and < width)
     * @param y    the row to add the pawn to (>= 0 and < height)
     * @param pawn the pawn to add
-    * @throws IllegalArgumentException if the Pawn can't be added
+    * @return the updated grid
     */
-  def +=(x: Int, y: Int, pawn: Pawn): Unit = {
-    if (isCellEmpty(x, y)) {
-      doUpdate(x, y, pawn)
-    } else {
-      log(s"Can't add $pawn at $x, $y")
-      throw new IllegalArgumentException("Can't add shape here")
+  def :+(x: Int, y: Int, pawn: Pawn): HexagonGrid = {
+    this :+ (x, y, pawn: CellContent)
+  }
+
+  private def :+(x: Int, y: Int, content: CellContent): HexagonGrid = {
+    this (x, y) match {
+      case Cell(_, _, Empty) =>
+        val newCells = cells.updated(y * width + x, Cell(x, y, content))
+        HexagonGrid(width, height, shiftOddDown, newCells)
+      case _ =>
+        throw new IllegalArgumentException(s"Can't add content at $x, $y")
     }
   }
 
   /**
-    * Returns a copy of this grid with an additional Pawn, if it can bw added. If not returns {Failure}.  
-    *
-    * @param x    the column to add the pawn to (>= 0 and < width)
-    * @param y    the row to add the pawn to (>= 0 and < height)
-    * @param pawn the pawn to add
-    * @return a Try wrapping the updated grid
-    */
-  def :+(x: Int, y: Int, pawn: Pawn): Try[HexagonGrid] = {
-    val gridCopy = this.copy()
-    Try.apply(() => {
-      gridCopy += (x, y, pawn)
-    }).transform(_ => Success(gridCopy), Failure(_))
-  }
-
-  /**
-    * Mutates the current grid by adding a Shape.
+    * Returns a copy of this grid with an additional Pawn, if it can be added.  
     *
     * @param x     the column to place the start of the shape to (>= 0 and < width)
     * @param y     the row to place start of the shape (>= 0 and < height)
     * @param shape the shape to add
-    * @throws IllegalArgumentException if the Shape can't be added
+    * @return the updated grid
     */
-  def +=(x: Int, y: Int, shape: Shape): Unit = {
-    val shapeCells = getShapeCell(x, y, shape)
-    val canAddShape = shapeCells.forall(c => isCellEmpty(c.x, c.y))
-    if (canAddShape) {
-      shapeCells.foreach(c => doUpdate(c.x, c.y, c.content))
-    } else {
-      log(s"Can't add $shape at $x, $y")
-      throw new IllegalArgumentException("Can't add shape here")
-    }
-  }
+  def :+(x: Int, y: Int, shape: Shape): HexagonGrid =
+    getShapeCell(x, y, shape).foldLeft(this)((g, c) => g :+ (c.x, c.y, c.content))
 
-  /**
-    * Returns a copy of this grid with an additional Pawn, if it can bw added. If not returns {Failure}.  
-    *
-    * @param x     the column to place the start of the shape to (>= 0 and < width)
-    * @param y     the row to place start of the shape (>= 0 and < height)
-    * @param shape the shape to add
-    * @return a Try wrapping the updated grid
-    */
-  def :+(x: Int, y: Int, shape: Shape): Try[HexagonGrid] = {
-    val gridCopy = this.copy()
-    Try.apply(() => {
-      gridCopy += (x, y, shape)
-    }).transform(_ => Success(gridCopy), Failure(_))
-  }
+  def canAdd(x: Int, y: Int, shape: Shape): Boolean =
+    getShapeCell(x, y, shape).forall(c => isCellEmpty(c.x, c.y))
 
   /**
     * Returns cells that *would* represent a given shape. See Shape#at for more details.
@@ -103,35 +65,13 @@ class HexagonGrid(val width: Int, val height: Int, val shiftOddDown: Boolean = t
     })
   }
 
-  def apply(x: Int, y: Int): Cell = {
-    if (x < 0 || x >= width) throw new IllegalArgumentException(s"x is outside bounds [0:$width]")
-    if (y < 0 || y >= height) throw new IllegalArgumentException(s"y is outside bounds [0:$height]")
-    _cells(y * width + x)
-  }
-
-  private def isCellEmpty(x: Int, y: Int) = {
-    try {
-      val cell = apply(x, y)
-      cell.content match {
+  private def isCellEmpty(x: Int, y: Int) =
+    (x >= 0 && x < width) && (y >= 0 && y < height) && {
+      apply(x, y).content match {
         case Empty => true
         case _ => false
       }
-    } catch {
-      case _: Exception => false
     }
-  }
-
-  private def copy(): HexagonGrid = {
-    val copy = new HexagonGrid(this.width, this.height, this.shiftOddDown)
-    copy._cells.clear()
-    copy._cells ++= this._cells
-    copy
-  }
-
-  private def doUpdate(x: Int, y: Int, content: CellContent): Unit = {
-    log(s"Setting content of $x, $y to $content")
-    _cells.update(y * width + x, Cell(x, y, content))
-  }
 
   private def updatePosition(pos: (Int, Int), direction: HexaDirection): (Int, Int) = {
     val (x, y) = pos
@@ -173,6 +113,18 @@ class HexagonGrid(val width: Int, val height: Int, val shiftOddDown: Boolean = t
 
   // TODO
   private def log(str: String): Unit = {
-    // println("[LOG] " + str)
+    println("[LOG] " + str)
+  }
+}
+
+object HexagonGrid {
+
+  def apply(width: Int, height: Int, shiftOddDown: Boolean = true): HexagonGrid = {
+    val cells = for (y <- 0 until height; x <- 0 until width) yield Cell(x, y)
+    HexagonGrid(width, height, shiftOddDown, cells)
+  }
+
+  def apply(width: Int, height: Int, shiftOddDown: Boolean, cells: Seq[Cell]): HexagonGrid = {
+    new HexagonGrid(width, height, shiftOddDown, cells)
   }
 }

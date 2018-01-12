@@ -6,7 +6,7 @@ import org.scalatest.FunSuite
 class HexagonGridTest extends FunSuite {
 
   test("all cells of grid are empty") {
-    val grid = new HexagonGrid(3, 2)
+    val grid = HexagonGrid(3, 2)
 
     assert(grid(0, 0) == Cell(0, 0))
     assert(grid(1, 0) == Cell(1, 0))
@@ -17,46 +17,53 @@ class HexagonGridTest extends FunSuite {
   }
 
   test("add a Pawn inside the grid") {
-    val grid = new HexagonGrid(4, 3)
-
-    assert((grid += (0, 0, Pawn())).isSuccess)
+    val grid = HexagonGrid(4, 3) :+ (0, 0, Pawn())
+    assert(grid(0, 0).content == Pawn())
   }
 
-  test("can't add a Pawn outside of the grid") {
-    val grid = new HexagonGrid(4, 3)
+  test("can't add a Pawn outside of the grid (1)") {
+    val grid = HexagonGrid(4, 3)
 
-    assert((grid += (-1, -1, Pawn())).isFailure)
-    assert((grid += (10, 10, Pawn())).isFailure)
+    assertThrows[IllegalArgumentException] {
+      grid :+ (-1, -1, Pawn())
+    }
+  }
+
+  test("can't add a Pawn outside of the grid (2)") {
+    val grid = HexagonGrid(4, 3)
+
+    assertThrows[IllegalArgumentException] {
+      grid :+ (10, 10, Pawn())
+    }
   }
 
   test("can't add a Pawn in an occupied cell") {
-    val grid = new HexagonGrid(4, 3)
+    val grid = HexagonGrid(4, 3) :+ (0, 0, Pawn())
 
-    assert((grid += (0, 0, Pawn())).isSuccess)
-    assert((grid += (0, 0, Pawn())).isFailure)
+    assertThrows[IllegalArgumentException] {
+      grid :+ (0, 0, Pawn())
+    }
   }
 
   test("add a shape inside an empty grid") {
-    val grid = new HexagonGrid(4, 3)
-
-    val shape = Shape(Seq(Down))
-    assert((grid += (0, 0, shape)).isSuccess)
+    HexagonGrid(4, 3) :+ (0, 0, Shape(Seq(Down)))
   }
 
   test("can't add a shape that continues outside of the grid") {
-    val grid = new HexagonGrid(4, 3)
+    val grid = HexagonGrid(4, 3)
 
-    val shape = Shape(Seq(Down, Down, Down, Down))
-    assert((grid += (0, 0, shape)).isFailure)
+    assertThrows[IllegalArgumentException] {
+      grid :+ (0, 0, Shape(Seq(Down, Down, Down, Down)))
+    }
   }
 
   test("encircle grid with default shift") {
-    val grid = new HexagonGrid(4, 3)
-    assert((grid += (0, 0, Shape(Seq(DownRight, UpRight, DownRight, Down, Down, UpLeft, DownLeft, UpLeft, Up)))).isSuccess)
+    val grid = HexagonGrid(4, 3)
+    grid :+ (0, 0, Shape(Seq(DownRight, UpRight, DownRight, Down, Down, UpLeft, DownLeft, UpLeft, Up)))
   }
 
   test("encircle grid with up shift") {
-    val grid = new HexagonGrid(4, 3, shiftOddDown = false)
-    assert((grid += (0, 0, Shape(Seq(UpRight, DownRight, UpRight, Down, Down, DownLeft, UpLeft, DownLeft, Up)))).isSuccess)
+    val grid = HexagonGrid(4, 3, shiftOddDown = false)
+    grid :+ (0, 0, Shape(Seq(UpRight, DownRight, UpRight, Down, Down, DownLeft, UpLeft, DownLeft, Up)))
   }
 }

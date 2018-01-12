@@ -3,10 +3,11 @@ package example
 import example.HexaDirections._
 import org.scalatest.FunSuite
 
+// TODO : fix
 class HexagonGridPrinterTest extends FunSuite {
 
   test("test empty 2x2 grid") {
-    val grid = new HexagonGrid(2, 2)
+    val grid = HexagonGrid(2, 2)
     assert(renderGrid(grid) == "" +
       "  __     \n" +
       " /  \\__  \n" +
@@ -17,8 +18,7 @@ class HexagonGridPrinterTest extends FunSuite {
   }
 
   test("test 3x3 with shape") {
-    val grid = new HexagonGrid(3, 2)
-    grid += (0, 0, Shape(Seq(DownRight, UpRight)))
+    val grid = HexagonGrid(3, 2) :+ (0, 0, Shape(Seq(DownRight, UpRight)))
 
     assert(renderGrid(grid) == "" +
       "  __    __  \n" +

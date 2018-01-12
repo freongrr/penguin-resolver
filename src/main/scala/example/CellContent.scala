@@ -5,6 +5,7 @@ sealed trait CellContent
 /**
   * Represents an empty cell
   */
+// TODO : shouldn't Empty extend Cell? 
 object Empty extends CellContent
 
 /**

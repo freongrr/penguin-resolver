@@ -1,5 +1,7 @@
 package example
 
+import example.HexaDirections.{Down, DownRight, Up, UpRight}
+
 /**
   * Represents a shape in an hexagonal grid. The shape is expressed as a sequence of direction changes (a empty
   * sequence means a single cell).
@@ -7,11 +9,6 @@ package example
 case class Shape(directions: Seq[HexaDirection] = Seq.empty) {
 
   def length: Int = directions.length
-
-  // TODO : try with a method like that:
-  // def segments: Seq[ShapeSegment] = {
-  //   0 to length map (i => at(i))
-  // }
 
   def at(index: Int): ShapeSegment = {
     if (index < 0 || index > length)
@@ -27,6 +24,7 @@ case class Shape(directions: Seq[HexaDirection] = Seq.empty) {
     // \__/2 \    3: UpRight, UpLeft, DownRight, Down
     //    \__/    4: DownLeft
 
+    // TODO : use less if's
     if (index == 0) {
       if (length != 0) {
         ShapeSegment(Seq(directions.head))
@@ -56,3 +54,11 @@ case class Shape(directions: Seq[HexaDirection] = Seq.empty) {
     }
   }
 }
+
+object Shape1 extends Shape(Seq(UpRight, Down, Down))
+
+object Shape2 extends Shape(Seq(Up, UpRight, DownRight))
+
+object Shape3 extends Shape(Seq(DownRight, UpRight, DownRight))
+
+object Shape4 extends Shape(Seq(UpRight, UpRight, DownRight))
