@@ -1,0 +1,11 @@
+Configuration:
+  Appenders:
+    Console:
+      name: STDOUT
+      PatternLayout:
+        Pattern: "[%date][%level][%thread][%c{1.}] %M():%L %message%n"
+  Loggers:
+    Root:
+      level: INFO
+      AppenderRef:
+        ref: STDOUT

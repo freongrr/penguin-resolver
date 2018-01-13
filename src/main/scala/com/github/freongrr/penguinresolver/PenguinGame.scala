@@ -32,16 +32,18 @@ object PenguinGame {
     val shapesAndPositions = shapes.map(s => (s, getPossiblePositions(grid0, s)))
 
     // Now try them all together
-    val results = shapesAndPositions
+    val start = System.currentTimeMillis()
+    val solutionGrids = shapesAndPositions
       .foldLeft(Seq(grid0))((grids, tuple) => {
         val (shape, positions) = tuple
-        applyShapeToGrids(grids, shape, positions)
+        val newGrids = applyShapeToGrids(grids, shape, positions)
+        println(s"$shape: ${grids.length} grids x ${positions.length} positions => ${newGrids.length} grids")
+        newGrids
       })
 
-    println("Solutions:")
-    results foreach (g => println(printer render g))
+    println(s"Found ${solutionGrids.length} solutions in ${System.currentTimeMillis() - start} ms:")
+    solutionGrids foreach (g => println(printer render g))
   }
-
 
   private type Position = (Int, Int, Int) // x, y, rotation
 
