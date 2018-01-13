@@ -4,6 +4,8 @@ import com.github.freongrr.penguinresolver.grid.HexaDirections.{Down, DownRight,
 import com.github.freongrr.penguinresolver.grid._
 import com.github.freongrr.penguinresolver.printer.HexagonGridPrinter
 
+import scala.util.Success
+
 /**
   * Resolves a penguin puzzle
   */
@@ -48,13 +50,15 @@ object PenguinGame {
   private def getPossiblePositions(grid: HexagonGrid, shape: Shape): Seq[Position] =
     for (y <- 0 until grid.height;
          x <- 0 until grid.width;
-         r <- 0 until FullRotation if grid.canAdd(x, y, shape.rotate(r)))
+         r <- 0 until FullRotation if grid.tryAdd(x, y, shape.rotate(r)).isSuccess)
       yield (x, y, r)
 
   private def applyShapeToGrids(grids: Seq[HexagonGrid], shape: Shape, positions: Seq[Position]): Seq[HexagonGrid] = {
-    // TODO : use a method that returns an Option[HexagonGrid] and match it instead of calling canAdd
-    for (g <- grids; p <- positions if g.canAdd(p._1, p._2, shape.rotate(p._3)))
-      yield g :+ (p._1, p._2, shape.rotate(p._3))
+    val tried = for (g <- grids; p <- positions)
+      yield g.tryAdd(p._1, p._2, shape.rotate(p._3))
+    tried.collect({
+      case Success(g) => g
+    })
   }
 }
 

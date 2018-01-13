@@ -1,43 +1,54 @@
 package com.github.freongrr.penguinresolver.grid
 
 /**
-  * Represents a direction in an hexagonal grid
+  * Represents a direction in an hexagonal grid.
   */
 sealed trait HexaDirection {
 
-  def opposite: HexaDirection =
-    this match {
-      case HexaDirections.UpRight => HexaDirections.DownLeft
-      case HexaDirections.Up => HexaDirections.Down
-      case HexaDirections.UpLeft => HexaDirections.DownRight
-      case HexaDirections.DownLeft => HexaDirections.UpRight
-      case HexaDirections.Down => HexaDirections.Up
-      case HexaDirections.DownRight => HexaDirections.UpLeft
-    }
+  /**
+    * Returns the opposite direction. This is the equivalent of calling #rotateByOne 3 times.
+    *
+    * @return a direction
+    */
+  def opposite: HexaDirection
 
-  def rotateByOne(): HexaDirection =
-    this match {
-      case HexaDirections.UpRight => HexaDirections.Up
-      case HexaDirections.Up => HexaDirections.UpLeft
-      case HexaDirections.UpLeft => HexaDirections.DownLeft
-      case HexaDirections.DownLeft => HexaDirections.Down
-      case HexaDirections.Down => HexaDirections.DownRight
-      case HexaDirections.DownRight => HexaDirections.UpRight
-    }
+  /**
+    * Rotates the direction counter-clockwise. 
+    *
+    * @return a direction
+    */
+  def rotateByOne(): HexaDirection
 }
 
 object HexaDirections {
 
-  case object UpRight extends HexaDirection
+  case object UpRight extends HexaDirection {
+    override def opposite: HexaDirection = DownLeft
+    override def rotateByOne(): HexaDirection = Up
+  }
 
-  case object Up extends HexaDirection
+  case object Up extends HexaDirection {
+    override def opposite: HexaDirection = Down
+    override def rotateByOne(): HexaDirection = UpLeft
+  }
 
-  case object UpLeft extends HexaDirection
+  case object UpLeft extends HexaDirection {
+    override def opposite: HexaDirection = DownRight
+    override def rotateByOne(): HexaDirection = DownLeft
+  }
 
-  case object DownLeft extends HexaDirection
+  case object DownLeft extends HexaDirection {
+    override def opposite: HexaDirection = UpRight
+    override def rotateByOne(): HexaDirection = Down
+  }
 
-  case object Down extends HexaDirection
+  case object Down extends HexaDirection {
+    override def opposite: HexaDirection = Up
+    override def rotateByOne(): HexaDirection = DownRight
+  }
 
-  case object DownRight extends HexaDirection
-
+  case object DownRight extends HexaDirection {
+    override def opposite: HexaDirection = UpLeft
+    override def rotateByOne(): HexaDirection = UpRight
+  }
 }

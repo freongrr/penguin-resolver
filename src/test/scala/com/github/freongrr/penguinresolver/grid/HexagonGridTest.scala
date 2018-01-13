@@ -24,6 +24,7 @@ class HexagonGridTest extends FunSuite {
   test("can't add a Pawn outside of the grid (1)") {
     val grid = HexagonGrid(4, 3)
 
+    assert(grid.tryAdd(-1, -1, Pawn()).isFailure)
     assertThrows[IllegalArgumentException] {
       grid :+ (-1, -1, Pawn())
     }
@@ -32,6 +33,7 @@ class HexagonGridTest extends FunSuite {
   test("can't add a Pawn outside of the grid (2)") {
     val grid = HexagonGrid(4, 3)
 
+    assert(grid.tryAdd(10, 10, Pawn()).isFailure)
     assertThrows[IllegalArgumentException] {
       grid :+ (10, 10, Pawn())
     }
@@ -40,6 +42,7 @@ class HexagonGridTest extends FunSuite {
   test("can't add a Pawn in an occupied cell") {
     val grid = HexagonGrid(4, 3) :+ (0, 0, Pawn())
 
+    assert(grid.tryAdd(0, 0, Pawn()).isFailure)
     assertThrows[IllegalArgumentException] {
       grid :+ (0, 0, Pawn())
     }
@@ -52,6 +55,7 @@ class HexagonGridTest extends FunSuite {
   test("can't add a shape that continues outside of the grid") {
     val grid = HexagonGrid(4, 3)
 
+    assert(grid.tryAdd(0, 0, Shape(Seq(Down, Down, Down, Down))).isFailure)
     assertThrows[IllegalArgumentException] {
       grid :+ (0, 0, Shape(Seq(Down, Down, Down, Down)))
     }
