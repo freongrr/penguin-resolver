@@ -1,4 +1,4 @@
-name := "penguin-resolver"
+name := "penguin-resolver-lib"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 libraryDependencies += "org.apache.logging.log4j" %% "log4j-api-scala" % "11.0"

@@ -8,3 +8,4 @@ Modules
 -------
 
 * lib: game objects and solver
+* web: web front-end

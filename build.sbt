@@ -1,3 +1,5 @@
+name := "penguin-resolver-root"
+
 lazy val commonSettings = Seq(
   organization := "com.github.freongrr",
   version := "0.1.0-SNAPSHOT",
@@ -5,4 +7,7 @@ lazy val commonSettings = Seq(
 )
 
 lazy val lib = (project in file("lib"))
+  .settings(commonSettings)
+
+lazy val web = (project in file("web"))
   .settings(commonSettings)
