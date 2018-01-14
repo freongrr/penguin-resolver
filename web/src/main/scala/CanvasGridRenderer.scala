@@ -13,14 +13,14 @@ object CanvasGridRenderer {
     val hMargin = 20
     val vMargin = 40
     val hexaWidth = 40
-    val hexaHeight = 40
+    val hexaHeight = 36
 
     for (y <- 0 until 4 /* grid.height */ ; x <- 0 until 5 /* grid.width */ ) {
       println(s"x: $x, y: $y")
       // val c = grid(x, y)
       val left = x match {
         case 0 => hMargin
-        case _ => hMargin + ((hexaHeight * 0.75) * x).intValue()
+        case _ => hMargin + ((hexaWidth * 0.75) * x).intValue()
       }
       val top = x % 2 match {
         case 0 => vMargin + (hexaHeight * y).intValue()
