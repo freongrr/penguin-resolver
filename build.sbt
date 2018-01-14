@@ -11,3 +11,4 @@ lazy val lib = (project in file("lib"))
 
 lazy val web = (project in file("web"))
   .settings(commonSettings)
+  .dependsOn(lib)
