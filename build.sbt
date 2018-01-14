@@ -1,12 +1,8 @@
-name := "penguin-resolver"
+lazy val commonSettings = Seq(
+  organization := "com.github.freongrr",
+  version := "0.1.0-SNAPSHOT",
+  scalaVersion := "2.12.4"
+)
 
-version := "0.1"
-
-scalaVersion := "2.12.4"
-
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
-libraryDependencies += "org.apache.logging.log4j" %% "log4j-api-scala" % "11.0"
-libraryDependencies += "org.apache.logging.log4j" % "log4j-api" % "2.8.2"
-libraryDependencies += "org.apache.logging.log4j" % "log4j-core" % "2.8.2" % Runtime
-libraryDependencies += "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.2"
-libraryDependencies += "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.9.2"
+lazy val lib = (project in file("lib"))
+  .settings(commonSettings)
