@@ -13,13 +13,19 @@ object CanvasGridRenderer {
     }
   }
 
-  private val HorizontalMargin = 20
-  private val VerticalMargin = 40
-  private val HexaWidth = 40
-  private val HexaHeight = 36
+  // HACK - pass these
+  private var HorizontalMargin = 20
+  private var VerticalMargin = 40
+  private var HexaWidth = 40
+  private var HexaHeight = 36
 
   def render(canvas: Canvas, grid: HexagonGrid): Unit = {
     val ctx = canvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
+
+    // HexaWidth = (canvas.width - HorizontalMargin * 2) / grid.width
+    // HexaHeight = (canvas.height - VerticalMargin * 2) / grid.height
+    HorizontalMargin = ((canvas.width - HexaWidth - ((grid.width - 1) * HexaWidth * 0.75)) / 2).intValue()
+    VerticalMargin = HexaHeight / 4 + ((canvas.height - grid.height * HexaHeight) / 2).intValue()
 
     // Render cells sorted by depth
     grid.cells sorted CellComparator foreach (renderCell(ctx, grid, _))
@@ -27,7 +33,7 @@ object CanvasGridRenderer {
 
   private def renderCell(ctx: CanvasRenderingContext2D, grid: HexagonGrid, cell: Cell): Unit = {
     val bounds = getCellBounds(cell.y, cell.x)
-    println(s"Rendering: $cell at $bounds")
+    // println(s"Rendering: $cell at $bounds")
 
     cell match {
       case EmptyCell(_, _) =>

@@ -3,12 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <title>Penguin Game Resolver</title>
-    <link rel="stylesheet" type="text/css" href="board.css"/> 
+    <link rel="stylesheet" type="text/css" href="board.css"/>
 </head>
 <body>
-<div>
-    <canvas style="display: block" id="canvas" width="255" height="255"></canvas>
+
+<h1>Puzzle Solver</h1>
+
+<div class="instructions">
+    Click on the grid below to place 2, 3 or 4 pawns.
 </div>
+
+<div>
+    <canvas style="display: block" id="canvas" width="200" height="200" onclick=""></canvas>
+</div>
+
+<button onclick="GridResolver.clearIt()">Clear Grid</button>
+<button onclick="GridResolver.solveIt()">Solve Grid!</button>
+
 <script type="text/javascript" src="../penguin-resolver-web-fastopt.js"></script>
 </body>
 </html>
