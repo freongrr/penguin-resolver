@@ -1,11 +1,10 @@
 package com.github.freongrr.penguinresolver.grid
 
 import com.github.freongrr.penguinresolver.grid.HexaDirections._
-import org.apache.logging.log4j.scala.Logging
 
 import scala.util.Try
 
-class HexagonGrid(val width: Int, val height: Int, val shiftOddDown: Boolean, val cells: Seq[Cell]) extends Logging {
+class HexagonGrid(val width: Int, val height: Int, val shiftOddDown: Boolean, val cells: Seq[Cell]) {
 
   /**
     * Returns the Cell at the given position. Throws IllegalArgumentException if the requested position is invalid.
@@ -44,11 +43,9 @@ class HexagonGrid(val width: Int, val height: Int, val shiftOddDown: Boolean, va
   private def withContent(x: Int, y: Int, content: CellContent): HexagonGrid =
     this (x, y) match {
       case EmptyCell(_, _) =>
-        logger.debug(s"Setting $content at $x, $y")
         val newCells = cells.updated(y * width + x, OccupiedCell(x, y, content))
         HexagonGrid(width, height, shiftOddDown, newCells)
       case _ =>
-        logger.debug(s"Can't add $content at $x, $y")
         throw new IllegalArgumentException(s"Can't add content at $x, $y")
     }
 
