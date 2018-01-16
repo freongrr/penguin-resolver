@@ -1,5 +1,6 @@
 package com.github.freongrr.penguinresolver.grid
 
+// TODO : use row and column to avoid confusion with x/y position in pixels?
 sealed trait Cell {
 
   def x: Int

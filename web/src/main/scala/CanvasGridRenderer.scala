@@ -3,7 +3,7 @@ import com.github.freongrr.penguinresolver.grid._
 import org.scalajs.dom.CanvasRenderingContext2D
 import org.scalajs.dom.html.Canvas
 
-object CanvasGridRenderer {
+private class CanvasGridRenderer(canvas: Canvas) extends GridRenderer {
 
   private val CellComparator = Ordering.by[Cell, Int] {
     case EmptyCell(_, _) => 1
@@ -13,22 +13,36 @@ object CanvasGridRenderer {
     }
   }
 
-  // HACK - pass these
-  private var HorizontalMargin = 20
-  private var VerticalMargin = 40
-  private var HexaWidth = 40
-  private var HexaHeight = 36
+  private val HexaWidth = 40
+  private val HexaHeight = 36
 
-  def render(canvas: Canvas, grid: HexagonGrid): Unit = {
+  private var _grid: HexagonGrid = HexagonGrid(0, 0)
+  private var horizontalMargin = 0
+  private var verticalMargin = 0
+
+  override def grid: HexagonGrid = _grid
+
+  override def grid_=(newGrid: HexagonGrid): Unit = {
+    this._grid = newGrid
+    render()
+  }
+
+  override def render(): Unit = {
     val ctx = canvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-    // HexaWidth = (canvas.width - HorizontalMargin * 2) / grid.width
-    // HexaHeight = (canvas.height - VerticalMargin * 2) / grid.height
-    HorizontalMargin = ((canvas.width - HexaWidth - ((grid.width - 1) * HexaWidth * 0.75)) / 2).intValue()
-    VerticalMargin = HexaHeight / 4 + ((canvas.height - grid.height * HexaHeight) / 2).intValue()
+    horizontalMargin = ((canvas.width - HexaWidth - ((grid.width - 1) * HexaWidth * 0.75)) / 2).intValue()
+    verticalMargin = HexaHeight / 4 + ((canvas.height - grid.height * HexaHeight) / 2).intValue()
 
     // Render cells sorted by depth
     grid.cells sorted CellComparator foreach (renderCell(ctx, grid, _))
+  }
+
+  override def getCellAt(x: Int, y: Int): Option[Cell] = {
+    grid.cells.find(c => {
+      val bounds = getCellBounds(c.y, c.x)
+      x >= bounds.leftQuarter && x <= bounds.rightQuarter && y >= bounds.top && y <= bounds.bottom
+    })
   }
 
   private def renderCell(ctx: CanvasRenderingContext2D, grid: HexagonGrid, cell: Cell): Unit = {
@@ -39,7 +53,7 @@ object CanvasGridRenderer {
       case EmptyCell(_, _) =>
         drawBackground(ctx, bounds, "hsl(200, 100%, 50%)")
         drawSides(ctx, bounds, Seq.empty, "hsl(200, 100%, 75%)", 1)
-      case OccupiedCell(_, _, content) => {
+      case OccupiedCell(_, _, content) =>
         content match {
           case Pawn() =>
             drawBackground(ctx, bounds, "rgb(255, 0, 255)")
@@ -48,7 +62,6 @@ object CanvasGridRenderer {
             drawBackground(ctx, bounds, "rgb(192, 192, 192)")
             drawSides(ctx, bounds, openSides, "rgb(0, 0, 0)", 1)
         }
-      }
     }
   }
 
@@ -87,13 +100,13 @@ object CanvasGridRenderer {
     //
 
     val left = column match {
-      case 0 => HorizontalMargin
-      case _ => HorizontalMargin + (HexaWidth * 0.75) * column
+      case 0 => horizontalMargin
+      case _ => horizontalMargin + (HexaWidth * 0.75) * column
     }
     // TODO : this should look at grid.shiftOddDown!
     val top = column % 2 match {
-      case 0 => VerticalMargin + (HexaHeight * row)
-      case 1 => VerticalMargin + (HexaHeight * (row - 0.5))
+      case 0 => verticalMargin + (HexaHeight * row)
+      case 1 => verticalMargin + (HexaHeight * (row - 0.5))
     }
     HexaBounds(left, top, HexaWidth, HexaHeight)
   }
@@ -152,4 +165,13 @@ object CanvasGridRenderer {
     def bottom: Double = y + height
   }
 
+}
+
+object CanvasGridRenderer {
+
+  def apply(canvas: Canvas, grid: HexagonGrid): GridRenderer = {
+    val renderer = new CanvasGridRenderer(canvas)
+    renderer._grid = grid
+    renderer
+  }
 }
